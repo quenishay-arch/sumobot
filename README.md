@@ -45,7 +45,7 @@ The robot follows strict sumobot competition requirements:
 
 ---
 
-## 🚀 Key Highlights
+## Key Highlights
 
 - Minimal hardware design using only essential components
 - Modular plug-and-play integration using motor driver shield
