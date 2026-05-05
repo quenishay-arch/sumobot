@@ -53,3 +53,11 @@ The robot follows strict sumobot competition requirements:
 - Real-time WiFi-based robot control via NodeMCU ESP8266
 - Lightweight mechanical design optimized for competition constraints
 - Practical implementation of embedded systems and IoT control
+
+---
+## Project Gallery
+<p align="center">
+  <img src="sumo1.png" width="250"/>
+  <img src="sumo2.png" width="250"/>
+
+</p>
