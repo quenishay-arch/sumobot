@@ -1,0 +1,224 @@
+/******************* WiFi Robot Remote Control Mode ********************/
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <ArduinoOTA.h>
+#include <WiFiClient.h>
+// connections for drive Motors
+const int PWM_A = D1;
+const int PWM_B = D2;
+const int DIR_A = D3;
+const int DIR_B = D4;
+const int buzPin = D5; const int ledPin = D8; const int wifiLedPin = D0; as STA mode
+// set digital pin D5 as buzzer pin (use active buzzer)
+// set digital pin D8 as LED pin (use super bright LED)
+// set digital pin D0 as indication, the LED turn on if NodeMCU connected to WiFi
+const String ssid = "XXXXXXXXX"; // set Wifi networks you want to connect to
+const String password = "XXXXXX"; // set password for Wifi networks
+String command; // String to store app command state.
+int SPEED = 1023; // 330 - 1023.
+int speed_Coeff = 3;
+ESP8266WebServer server(80); // Create a webserver object that listens for HTTP request on port 80
+unsigned long previousMillis = 0;
+void setup() {
+Serial.begin(115200); // set up Serial library at 115200 bps
+Serial.println();
+Serial.println("*WiFi Robot Remote Control Mode*");
+Serial.println("--------------------------------------");
+pinMode(buzPin, OUTPUT); pinMode(ledPin, OUTPUT); pinMode(wifiLedPin, OUTPUT); digitalWrite(buzPin, LOW);
+digitalWrite(ledPin, LOW);
+digitalWrite(wifiLedPin, HIGH);
+// sets the buzzer pin as an Output
+// sets the LED pin as an Output
+// sets the Wifi LED pin as an Output
+// Set all the motor control pins to outputs
+pinMode(PWM_A, OUTPUT);
+pinMode(PWM_B, OUTPUT);
+pinMode(DIR_A, OUTPUT);
+pinMode(DIR_B, OUTPUT);
+// Turn off motors - Initial state
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, 0);
+analogWrite(PWM_B, 0);
+Serial.println();
+Serial.println("Configuring access point...
+");
+WiFi.mode(WIFI_AP); // Mode AP/Hotspot
+WiFi.softAP(ssid, password);
+IPAddress myIP = WiFi.softAPIP();
+// Start the server -------------------------------------------------------
+server.begin();
+Serial.println("Server dijalankan");
+// Print the IP address ---------------------------------------------------
+Serial.println("*WiFi-AP-Mode*");
+Serial.print("AP IP address: ");
+Serial.println(myIP);
+server.on("/", HTTP _handleRoot); // call the 'handleRoot' function when a client requests URI "/"
+server.onNotFound(HTTP _handleRoot); than "/"), call function "handleNotFound"
+// when a client requests an unknown URI (i.e. something other
+server.begin(); // actually start the server
+ArduinoOTA.begin(); // enable to receive update/uploade firmware via Wifi OTA
+}
+void loop() {
+ArduinoOTA.handle(); server.handleClient(); command = server.arg("State"); switch (command[0]) {
+case 'F':
+Forward();
+break;
+case 'B':
+Backward();
+break;
+case 'R':
+// listen for update OTA request from clients
+// listen for HTTP requests from clients
+// check HTPP request, if has arguments "State" then saved the value
+TurnRight();
+break;
+case 'L':
+TurnLeft();
+break;
+case 'G':
+ForwardLeft();
+break;
+case 'H':
+BackwardLeft();
+break;
+case 'I':
+ForwardRight();
+break;
+case ' J':
+BackwardRight();
+break;
+case 'S':
+Stop();
+break;
+case 'V':
+BeepHorn();
+break;
+case 'W':
+TurnLightOn();
+break;
+case 'w':
+break;
+case '3':
+SPEED = 540;
+break;
+case '4':
+SPEED = 610;
+break;
+case '5':
+SPEED = 680;
+break;
+case '6':
+SPEED = 750;
+break;
+case '7':
+SPEED = 820;
+break;
+case '8':
+SPEED = 890;
+break;
+case '9':
+SPEED = 960;
+break;
+case 'q':
+SPEED = 1023;
+break;
+default:
+break;
+}
+}
+// function prototypes for HTTP handlers
+void HTTP _handleRoot(void) {
+server.send(200,
+"text/html"
+,
+""); if (server.hasArg("State")) {
+Serial.println(server.arg("State"));
+// Send HTTP status 200 (Ok) and send some text to the browser/client
+}
+}
+void handleNotFound() {
+server.send(404,
+"text/plain"
+,
+"404: Not found"); handler for the URI in the request
+// Send HTTP status 404 (Not Found) when there's no
+}
+// function to move forward
+void Forward() {
+digitalWrite(DIR_A, HIGH);
+digitalWrite(DIR_B, HIGH);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED);
+}
+// function to move backward
+void Backward() {
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED);
+}
+// function to turn right
+void TurnRight() {
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, HIGH);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED);
+}
+// function to turn left
+void TurnLeft() {
+digitalWrite(DIR_A, HIGH);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED);
+}
+// function to move forward left
+void ForwardLeft() {
+digitalWrite(DIR_A, HIGH);
+digitalWrite(DIR_B, HIGH);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED / speed_Coeff);
+}
+// function to move backward left
+void BackwardLeft() {
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, SPEED);
+analogWrite(PWM_B, SPEED / speed_Coeff);
+}
+// function to move forward right
+void ForwardRight() {
+digitalWrite(DIR_A, HIGH);
+digitalWrite(DIR_B, HIGH);
+analogWrite(PWM_A, SPEED / speed_Coeff);
+analogWrite(PWM_B, SPEED);
+}
+// function to move backward left
+void BackwardRight() {
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, SPEED / speed_Coeff);
+analogWrite(PWM_B, SPEED);
+}
+// function to stop motors
+void Stop() {
+digitalWrite(DIR_A, LOW);
+digitalWrite(DIR_B, LOW);
+analogWrite(PWM_A, 0);
+analogWrite(PWM_B, 0);
+}
+// function to beep a buzzer
+void BeepHorn() {
+digitalWrite(buzPin, HIGH);
+delay(150);
+digitalWrite(buzPin, LOW);
+delay(80);
+}
+// function to turn on LED
+void TurnLightOn() {
+digitalWrite(ledPin, HIGH);
+}
+// function to turn off LED
+void TurnLightOff() {
+digitalWrite(ledPin, LOW);
+}
