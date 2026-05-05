@@ -10,18 +10,36 @@ The system is built using only two main electronic modules:
 
 - NodeMCU ESP8266 (WiFi-enabled microcontroller)
 - L293D Motor Driver Shield for NodeMCU
+- Dual DC motors (differential drive)
 
 The L293D Motor Driver Shield simplifies wiring by removing the need for jumper cables. The NodeMCU ESP8266 is directly mounted onto the shield’s socket, resulting in a compact and modular hardware setup.
 
 ---
 
-## System Integration
+## Communication & Control Logic
 
-- DC motors are connected directly to the L293D Motor Driver Shield
-- The robot chassis is assembled separately before electronic integration
-- Firmware is uploaded to the NodeMCU ESP8266 to enable WiFi-based remote control
+The system uses an HTTP-based command interface:
+- A web server (ESP8266WebServer) listens for incoming requests
+- Commands are parsed via query parameters (State)
+- Each command maps to a specific motion function
+
+- F → Forward
+- B → Backward
+- L / R → Turning
+- S → Stop
 
 ---
+
+## Motion Control Logic
+
+Motor behavior is implemented using:
+- Direction pins (DIR_A, DIR_B) → control rotation direction
+- PWM signals (PWM_A, PWM_B) → control speed
+  
+Differential speed control enables:
+- turning (asymmetric motor speeds)
+- directional movement
+- smooth transitions between states
 
 ## Mechanical Design Constraints
 
